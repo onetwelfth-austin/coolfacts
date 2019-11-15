@@ -1,0 +1,14 @@
+{
+  "name": "one12th-slack-game",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node coolfacts.js"
+  },
+  "dependencies": {
+    "@slack/rtm-api": "^5.0.3",
+    "aws-sdk": "^2.571.0",
+    "dotenv": "^8.2.0",
+    "request": "^2.88.0"
+  }
+}
