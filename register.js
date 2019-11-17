@@ -1,6 +1,29 @@
-let makeHTTPRequest = require('./utilities').makeHTTPRequest;
+let utilities = require('./utilities');
 
-function registerPlayer(error, response, body, parameters) {
+function registerPlayer(text, docClient, url, bot_token, user_token, tableName) {
+    //get info about player
+    let variables = utilities.splitMessage(text);
+    //get user by users.profile.get
+    let uri = url + 'users.profile.get';
+    let user_id = variables[0].replace('<', '').replace('>', '').replace('@', '');
+    let options = {
+        uri: uri,
+        qs: {
+            token: user_token,
+            user: user_id,
+        },
+        method: 'GET'
+    };
+    utilities.makeHTTPRequest(options, postWelcomeMessage, { 
+        variables: variables,
+        docClient: docClient,
+        url: url,
+        token: bot_token,
+        tableName: tableName
+    });
+}
+
+function postWelcomeMessage(error, response, body, parameters) {
     try {
         if (error) {
             throw error;
@@ -24,9 +47,10 @@ function registerPlayer(error, response, body, parameters) {
             },
             method: 'POST'
         };
-        makeHTTPRequest(options, insertPlayerIntoDB, { 
+        utilities.makeHTTPRequest(options, insertPlayerIntoDB, {
             variables: parameters.variables,
-            client: parameters.docClient
+            docClient: parameters.docClient,
+            tableName: parameters.tableName
         });
     } catch (err) {
         console.log(err);
@@ -34,12 +58,12 @@ function registerPlayer(error, response, body, parameters) {
 }
 
 function insertPlayerIntoDB(error, response, body, parameters) {
-    let table = "CoolFacts";
+    
     if (parameters.variables[4] == '') {
         parameters.variables[4] = 'None';
     }
     let params = {
-        TableName: table,
+        TableName: parameters.tableName,
         Item: {
             "user_id": parameters.variables[0],
             "question": parameters.variables[1],
@@ -49,7 +73,7 @@ function insertPlayerIntoDB(error, response, body, parameters) {
             "score": 0
         }
     };
-    parameters.client.put(params, function (err, data) {
+    parameters.docClient.put(params, function (err, data) {
         if (err) {
             console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
         } else {
@@ -58,7 +82,7 @@ function insertPlayerIntoDB(error, response, body, parameters) {
     });
 }
 
-module.exports = {registerPlayer, insertPlayerIntoDB};
+module.exports = { registerPlayer };
 
 
 //TODO: functionality to post message to direct DM
@@ -67,7 +91,7 @@ module.exports = {registerPlayer, insertPlayerIntoDB};
 //         if (error) {
 //             throw error;
 //         }
-        
+
 //         //get IM list (needed for posting direct messages as a bot)
 //         let url = slack_api_url + 'im.list';
 //         let options = {
