@@ -1,7 +1,7 @@
 let AWS = require('aws-sdk');
 let dotenv = require('dotenv');
 let registerPlayer = require('./register').registerPlayer;
-let utilities = require('./utilities');
+let guessAnswer = require('./play').guessAnswer;
 const { RTMClient } = require('@slack/rtm-api');
 
 dotenv.config();
@@ -12,43 +12,30 @@ AWS.config.update({
     endpoint: "https://dynamodb.us-east-2.amazonaws.com"
 });
 
-let docClient = new AWS.DynamoDB.DocumentClient();
+const doc_client = new AWS.DynamoDB.DocumentClient();
 
 // Read a token from the environment variables
-const token = process.env.SLACK_BOT_TOKEN;
+const bot_token = process.env.SLACK_BOT_TOKEN;
 const user_token = process.env.SLACK_USER_TOKEN;
 
 // Initialize rtm
-const rtm = new RTMClient(token);
+const rtm = new RTMClient(bot_token);
 
 //Initialized slack api url
 const slack_api_url = 'https://slack.com/api/';
 
-//handle either registration message or possible answer
+const table_name = "CoolFacts";
+
+//handle either registration or answer submission
 rtm.on('message', (event) => {
     console.log(event);
+    let text = event.text;
     //if user is registering
     if (event.username == 'Register Player') {
-        let text = event.text;
-        //get info about player
-        let variables = utilities.splitMessage(text);
-        //get user by users.profile.get
-        let url = slack_api_url + 'users.profile.get';
-        let user_id = variables[0].replace('<', '').replace('>', '').replace('@', '');
-        let options = {
-            uri: url,
-            qs: {
-                token: user_token,
-                user: user_id,
-            },
-            method: 'GET'
-        };
-        utilities.makeHTTPRequest(options, registerPlayer, { 
-            variables: variables,
-            docClient: docClient,
-            url: slack_api_url,
-            token: token
-        });
+        registerPlayer(text, doc_client, slack_api_url, bot_token, user_token, table_name);
+    } //else if user is playing game
+    else if (event.username == 'Check Answer') {
+        guessAnswer(text, table_name, doc_client, slack_api_url, bot_token);
     }
 });
 
