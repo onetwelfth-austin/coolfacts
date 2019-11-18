@@ -34,7 +34,6 @@ function postWelcomeMessage(error, response, body, parameters) {
         let display_name = body_parsed.profile.display_name_normalized;
         parameters.variables[3] = real_name;
         parameters.variables[4] = display_name;
-        console.log(parameters.variables);
         let user_id = parameters.variables[0].replace('<', '').replace('>', '').replace('@', '');
         //post message to user to indicate they are in the game
         let url = parameters.url + 'chat.postMessage';
@@ -57,6 +56,7 @@ function postWelcomeMessage(error, response, body, parameters) {
     }
 }
 
+//TODO: replace all extra characters in answer and make lower case  
 function insertPlayerIntoDB(error, response, body, parameters) {
     
     if (parameters.variables[4] == '') {
@@ -67,7 +67,7 @@ function insertPlayerIntoDB(error, response, body, parameters) {
         Item: {
             "user_id": parameters.variables[0],
             "question": parameters.variables[1],
-            "answer": parameters.variables[2],
+            "answer": parameters.variables[2].toLowerCase(),
             "name": parameters.variables[3],
             "display_name": parameters.variables[4],
             "score": 0

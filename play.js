@@ -6,7 +6,7 @@ async function guessAnswer(answer, tableName, docClient, url, token) {
     let answer_variables = utilities.splitMessage(answer);
     let submitter = answer_variables[0];
     let fact_giver = answer_variables[1];
-    let guess = answer_variables[2];
+    let guess = answer_variables[2].toLowerCase();
     let name_parser_params = {
         TableName: tableName,
         ProjectionExpression: "user_id",
@@ -176,7 +176,3 @@ function alertUser(docClient, user, tableName, url, token, isCorrect, outputMess
 }
 
 module.exports = { guessAnswer }
-
-
-
-
