@@ -4,8 +4,8 @@ let utilities = require('./utilities');
 async function guessAnswer(answer, tableName, docClient, url, token, gameChannel) {
     let answer_variables = utilities.splitMessage(answer);
     let submitter = answer_variables[0];
-    let fact_giver = answer_variables[1].replace('<', '').replace('>', '').replace('@', '');
-    let guess = answer_variables[2].toLowerCase();
+    let fact_giver = answer_variables[1].replace(/[<>@]/g, '');
+    let guess = answer_variables[2].toLowerCase().replace(/[.?!,]/g, '');
     let name_parser_params = {
         TableName: tableName,
         ProjectionExpression: "user_id",
@@ -30,7 +30,7 @@ async function guessAnswer(answer, tableName, docClient, url, token, gameChannel
         let message = outputs[1];
         console.log(outputs);
         if (is_correct) { await updateScore(submitter, tableName, docClient); }  
-        setTimeout(alertUser, 3000, docClient, submitter, tableName, url, token, is_correct, message, gameChannel); 
+        setTimeout(alertUser, 2000, docClient, submitter, tableName, url, token, is_correct, message, gameChannel); 
     });
 }
 
@@ -39,14 +39,14 @@ async function checkAnswer(tableName, submitterUserId, factUserId, guess, docCli
     let output_message;
     let check_answer_params = {
         TableName: tableName,
-        FilterExpression: "#ui = :userId and #a = :answer",
+        FilterExpression: "#ui = :userId and #f = :fact",
         ExpressionAttributeNames: {
             "#ui": "user_id",
-            "#a": "answer"
+            "#f": "fact"
         },
         ExpressionAttributeValues: {
             ":userId": factUserId,
-            ":answer": guess
+            ":fact": guess
         }
     };
     let answers = await utilities.scanTable(docClient, check_answer_params);
