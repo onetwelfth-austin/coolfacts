@@ -3,6 +3,7 @@ let request = require('request');
 //split colon separated text
 function splitMessage(text) {
     let textSplit = text.split(/\r?\n/);
+    console.log(textSplit);
     let variables = [];
     for (let i = 0; i < textSplit.length; i++) {
         //split variables by key/value
@@ -40,4 +41,35 @@ async function scanTable(documentClient, params) {
     return scanResults;
 }
 
-module.exports = { splitMessage, makeHTTPRequest, scanTable };
+//sort results of JS objects by property
+function dynamicSort(property) {
+    var sortOrder = 1;
+    if(property[0] === "-") {
+        sortOrder = -1;
+        property = property.substr(1);
+    }
+    return function (a,b) {
+        /* next line works with strings and numbers, 
+         * and you may want to customize it to your needs
+         */
+        var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+        return result * sortOrder;
+    }
+}
+
+//post messages to slack
+function postMessageToSlack(slack_api_url, token, channel, message, callback, parameters) {
+    let uri = slack_api_url + 'chat.postMessage';
+    let options = {
+      uri: uri,
+      qs: {
+        token: token,
+        channel: channel,
+        text: message
+      },
+      method: 'POST'
+    };
+    makeHTTPRequest(options, callback, parameters);
+}
+
+module.exports = { splitMessage, makeHTTPRequest, scanTable, dynamicSort, postMessageToSlack };

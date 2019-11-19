@@ -1,11 +1,10 @@
 let utilities = require('./utilities');
 
-//parse answer submission
-//TODO: replace all extra characters in guess and make lower case 
+//parse answer submission 
 async function guessAnswer(answer, tableName, docClient, url, token) {
     let answer_variables = utilities.splitMessage(answer);
     let submitter = answer_variables[0];
-    let fact_giver = answer_variables[1];
+    let fact_giver = answer_variables[1].replace('<', '').replace('>', '').replace('@', '');
     let guess = answer_variables[2].toLowerCase();
     let name_parser_params = {
         TableName: tableName,
@@ -29,8 +28,9 @@ async function guessAnswer(answer, tableName, docClient, url, token) {
         let outputs = await checkAnswer(tableName, submitter, user_id, guess, docClient);
         let is_correct = outputs[0];
         let message = outputs[1];
+        console.log(outputs);
         if (is_correct) { await updateScore(submitter, tableName, docClient); }  
-        alertUser(docClient, submitter, tableName, url, token, is_correct, message); 
+        setTimeout(alertUser, 3000, docClient, submitter, tableName, url, token, is_correct, message); 
     });
 }
 
@@ -141,37 +141,17 @@ function alertUser(docClient, user, tableName, url, token, isCorrect, outputMess
             } else {
                 console.log("Query succeeded.");
                 data.Items.forEach(function (item) {
-                    console.log(item);
                     let user_id = user.replace('<', '').replace('>', '').replace('@', '');
                     //post message to user to indicate they are in the game
-                    let uri = url + 'chat.postMessage';
-                    let options = {
-                        uri: uri,
-                        qs: {
-                            token: token,
-                            channel: user_id,
-                            text: 'You guessed correctly! :+1: Your new score is *' + item.score + '*'
-                        },
-                        method: 'POST'
-                    };
-                    utilities.makeHTTPRequest(options, () => { }, {});
+                    let message = 'You guessed correctly! :+1: Your new score is *' + item.score + '*';
+                    utilities.postMessageToSlack(url, token, user_id, message, () => { }, {});
                 });
             }
         });
     } else {
         let user_id = user.replace('<', '').replace('>', '').replace('@', '');
         //post message to user to indicate they are in the game
-        let uri = url + 'chat.postMessage';
-        let options = {
-            uri: uri,
-            qs: {
-                token: token,
-                channel: user_id,
-                text: outputMessage 
-            },
-            method: 'POST'
-        };
-        utilities.makeHTTPRequest(options, () => { }, {});
+        utilities.postMessageToSlack(url, token, user_id, outputMessage, () => { }, {});
     }
 }
 

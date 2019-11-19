@@ -1,5 +1,6 @@
 let utilities = require('./utilities');
 
+//register players
 function registerPlayer(text, docClient, url, bot_token, user_token, tableName) {
     //get info about player
     let variables = utilities.splitMessage(text);
@@ -14,7 +15,7 @@ function registerPlayer(text, docClient, url, bot_token, user_token, tableName) 
         },
         method: 'GET'
     };
-    utilities.makeHTTPRequest(options, postWelcomeMessage, { 
+    utilities.makeHTTPRequest(options, postWelcomeMessage, {
         variables: variables,
         docClient: docClient,
         url: url,
@@ -23,6 +24,7 @@ function registerPlayer(text, docClient, url, bot_token, user_token, tableName) 
     });
 }
 
+//post message to user to show the completion of their registration.
 function postWelcomeMessage(error, response, body, parameters) {
     try {
         if (error) {
@@ -36,17 +38,8 @@ function postWelcomeMessage(error, response, body, parameters) {
         parameters.variables[4] = display_name;
         let user_id = parameters.variables[0].replace('<', '').replace('>', '').replace('@', '');
         //post message to user to indicate they are in the game
-        let url = parameters.url + 'chat.postMessage';
-        let options = {
-            uri: url,
-            qs: {
-                token: parameters.token,
-                channel: user_id,
-                text: 'Welcome to the Cool Facts game. You have been registered! :grinning:'
-            },
-            method: 'POST'
-        };
-        utilities.makeHTTPRequest(options, insertPlayerIntoDB, {
+        let message = 'Welcome to the Cool Facts game. You have been registered! :grinning:';
+        utilities.postMessageToSlack(parameters.url, parameters.token, user_id, message, insertPlayerIntoDB, {
             variables: parameters.variables,
             docClient: parameters.docClient,
             tableName: parameters.tableName
@@ -56,9 +49,9 @@ function postWelcomeMessage(error, response, body, parameters) {
     }
 }
 
-//TODO: replace all extra characters in answer and make lower case  
+//insert players into dynamodb  
 function insertPlayerIntoDB(error, response, body, parameters) {
-    
+
     if (parameters.variables[4] == '') {
         parameters.variables[4] = 'None';
     }
@@ -83,7 +76,6 @@ function insertPlayerIntoDB(error, response, body, parameters) {
 }
 
 module.exports = { registerPlayer };
-
 
 //TODO: functionality to post message to direct DM
 // function findIMChannelAndPostMessage(error, response, body, parameters) {
