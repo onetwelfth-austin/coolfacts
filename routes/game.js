@@ -90,7 +90,7 @@ router.post('/search', async (req, res) => {
     results.forEach((result) => {
       message = 'The question for' + result.user_id + ' is "' + result.question + '"';
     });
-    utilities.postMessageToSlack(slack_api_url, bot_token, submitter_user, message, () => { }, {});
+    utilities.postEphemeralMessageToSlack(slack_api_url, bot_token, game_channel, submitter_user, message, () => { }, {});
     res.status(200).send();
   } catch (err) {
     res.status(500).send('Error occurred: ' + err);
