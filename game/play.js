@@ -1,7 +1,7 @@
 let utilities = require('./utilities');
 
 //parse answer submission 
-async function guessAnswer(answer, tableName, docClient, url, token) {
+async function guessAnswer(answer, tableName, docClient, url, token, gameChannel) {
     let answer_variables = utilities.splitMessage(answer);
     let submitter = answer_variables[0];
     let fact_giver = answer_variables[1].replace('<', '').replace('>', '').replace('@', '');
@@ -30,7 +30,7 @@ async function guessAnswer(answer, tableName, docClient, url, token) {
         let message = outputs[1];
         console.log(outputs);
         if (is_correct) { await updateScore(submitter, tableName, docClient); }  
-        setTimeout(alertUser, 3000, docClient, submitter, tableName, url, token, is_correct, message); 
+        setTimeout(alertUser, 3000, docClient, submitter, tableName, url, token, is_correct, message, gameChannel); 
     });
 }
 
@@ -121,7 +121,7 @@ async function updateScore(user, tableName, docClient) {
 }
 
 //alert user of whether they are correct or not
-function alertUser(docClient, user, tableName, url, token, isCorrect, outputMessage) {
+function alertUser(docClient, user, tableName, url, token, isCorrect, outputMessage, gameChannel) {
     if (isCorrect) {
         //get score for user
         let get_score_params = {
@@ -144,14 +144,14 @@ function alertUser(docClient, user, tableName, url, token, isCorrect, outputMess
                     let user_id = user.replace('<', '').replace('>', '').replace('@', '');
                     //post message to user to indicate they are in the game
                     let message = 'You guessed correctly! :+1: Your new score is *' + item.score + '*';
-                    utilities.postMessageToSlack(url, token, user_id, message, () => { }, {});
+                    utilities.postEphemeralMessageToSlack(url, token, gameChannel, user_id, message, () => { }, {});
                 });
             }
         });
     } else {
         let user_id = user.replace('<', '').replace('>', '').replace('@', '');
         //post message to user to indicate they are in the game
-        utilities.postMessageToSlack(url, token, user_id, outputMessage, () => { }, {});
+        utilities.postEphemeralMessageToSlack(url, token, gameChannel, user_id, outputMessage, () => { }, {});
     }
 }
 

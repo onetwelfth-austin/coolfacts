@@ -1,7 +1,7 @@
 let utilities = require('./utilities');
 
 //register players
-function registerPlayer(text, docClient, url, bot_token, user_token, tableName) {
+function registerPlayer(text, docClient, url, bot_token, user_token, tableName, gameChannel) {
     //get info about player
     let variables = utilities.splitMessage(text);
     //get user by users.profile.get
@@ -20,7 +20,8 @@ function registerPlayer(text, docClient, url, bot_token, user_token, tableName) 
         docClient: docClient,
         url: url,
         token: bot_token,
-        tableName: tableName
+        tableName: tableName,
+        gameChannel: gameChannel
     });
 }
 
@@ -39,7 +40,7 @@ function postWelcomeMessage(error, response, body, parameters) {
         let user_id = parameters.variables[0].replace('<', '').replace('>', '').replace('@', '');
         //post message to user to indicate they are in the game
         let message = 'Welcome to the Cool Facts game. You have been registered! :grinning:';
-        utilities.postMessageToSlack(parameters.url, parameters.token, user_id, message, insertPlayerIntoDB, {
+        utilities.postEphemeralMessageToSlack(parameters.url, parameters.token, parameters.gameChannel, user_id, message, insertPlayerIntoDB, {
             variables: parameters.variables,
             docClient: parameters.docClient,
             tableName: parameters.tableName
