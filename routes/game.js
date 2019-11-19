@@ -88,7 +88,7 @@ router.post('/search', async (req, res) => {
     let results = await utilities.scanTable(doc_client, user_params);
     let message = '';
     results.forEach((result) => {
-      message = 'The question for' + result.user_id + ' is "' + result.question + '"';
+      message = 'The question for ' + result.user_id + ' is "' + result.question + '"';
     });
     utilities.postEphemeralMessageToSlack(slack_api_url, bot_token, game_channel, submitter_user, message, () => { }, {});
     res.status(200).send();
