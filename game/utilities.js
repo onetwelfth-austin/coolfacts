@@ -3,7 +3,6 @@ let request = require('request');
 //split colon separated text
 function splitMessage(text) {
     let textSplit = text.split(/\r?\n/);
-    console.log(textSplit);
     let variables = [];
     for (let i = 0; i < textSplit.length; i++) {
         //split variables by key/value
@@ -72,4 +71,20 @@ function postMessageToSlack(slack_api_url, token, channel, message, callback, pa
     makeHTTPRequest(options, callback, parameters);
 }
 
-module.exports = { splitMessage, makeHTTPRequest, scanTable, dynamicSort, postMessageToSlack };
+//post ephemeral messages to slack
+function postEphemeralMessageToSlack(slack_api_url, token, channel, user, message, callback, parameters) {
+    let uri = slack_api_url + 'chat.postEphemeral';
+    let options = {
+      uri: uri,
+      qs: {
+        token: token,
+        channel: channel,
+        text: message,
+        user: user
+      },
+      method: 'POST'
+    };
+    makeHTTPRequest(options, callback, parameters);
+}
+
+module.exports = { splitMessage, makeHTTPRequest, scanTable, dynamicSort, postMessageToSlack, postEphemeralMessageToSlack };

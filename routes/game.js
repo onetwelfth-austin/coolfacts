@@ -40,10 +40,10 @@ rtm.on('message', (event) => {
   let text = event.text;
   //if user is registering
   if (event.username == 'Register Player') {
-    registerPlayer(text, doc_client, slack_api_url, bot_token, user_token, table_name);
+    registerPlayer(text, doc_client, slack_api_url, bot_token, user_token, table_name, game_channel);
   } //else if user is playing game
   else if (event.username == 'Check Answer') {
-    guessAnswer(text, table_name, doc_client, slack_api_url, bot_token);
+    guessAnswer(text, table_name, doc_client, slack_api_url, bot_token, game_channel);
   }
 });
 
