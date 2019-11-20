@@ -63,7 +63,7 @@ function insertPlayerIntoDB(error, response, body, parameters) {
 function postWelcomeMessage(url, token, gameChannel, userId) {
     try {
         //post message to user to indicate they are in the game
-        let message = 'Welcome to the Cool Facts game. You have been registered! :grinning:';
+        let message = 'Welcome to the Random Fact game. :grinning: \n Your Random Fact is: "' + parameters.variables[1] + '"';
         utilities.postEphemeralMessageToSlack(url, token, gameChannel, userId, message, () => { }, {});
     } catch (err) {
         console.log(err);
