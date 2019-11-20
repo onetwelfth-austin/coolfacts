@@ -15,7 +15,7 @@ function registerPlayer(text, docClient, url, bot_token, user_token, tableName, 
         },
         method: 'GET'
     };
-    utilities.makeHTTPRequest(options, postWelcomeMessage, {
+    utilities.makeHTTPRequest(options, insertPlayerIntoDB, {
         variables: variables,
         docClient: docClient,
         url: url,
@@ -26,35 +26,16 @@ function registerPlayer(text, docClient, url, bot_token, user_token, tableName, 
     });
 }
 
-//post message to user to show the completion of their registration.
-function postWelcomeMessage(error, response, body, parameters) {
-    try {
-        if (error) {
-            throw error;
-        }
-        //get username of user, perhaps first and last name from profile
-        let body_parsed = JSON.parse(body);
-        let real_name = body_parsed.profile.real_name_normalized;
-        let display_name = body_parsed.profile.display_name_normalized;
-        parameters.variables[2] = real_name;
-        parameters.variables[3] = display_name;
-        let user_id = parameters.userId;
-        //post message to user to indicate they are in the game
-        let message = 'Welcome to the Cool Facts game. You have been registered! :grinning:';
-        utilities.postEphemeralMessageToSlack(parameters.url, parameters.token, parameters.gameChannel, user_id, message, insertPlayerIntoDB, {
-            variables: parameters.variables,
-            docClient: parameters.docClient,
-            tableName: parameters.tableName
-        });
-    } catch (err) {
-        console.log(err);
-    }
-}
-
 //insert players into dynamodb  
 function insertPlayerIntoDB(error, response, body, parameters) {
-    if (parameters.variables[4] == '') {
-        parameters.variables[4] = 'None';
+    //get username of user, perhaps first and last name from profile
+    let body_parsed = JSON.parse(body);
+    let real_name = body_parsed.profile.real_name_normalized;
+    let display_name = body_parsed.profile.display_name_normalized;
+    parameters.variables[2] = real_name;
+    parameters.variables[3] = display_name;
+    if (parameters.variables[3] == '') {
+        parameters.variables[3] = 'None';
     }
     let params = {
         TableName: parameters.tableName,
@@ -69,10 +50,24 @@ function insertPlayerIntoDB(error, response, body, parameters) {
     parameters.docClient.put(params, function (err, data) {
         if (err) {
             console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+            let message = 'There was an error registering. Please try again! :slightly_frowning_face:';
+            utilities.postEphemeralMessageToSlack(parameters.url, parameters.token, parameters.gameChannel, parameters.userId, message, () => { }, {});
         } else {
             console.log("Added item:", JSON.stringify(data, null, 2));
+            postWelcomeMessage(parameters.url, parameters.token, parameters.gameChannel, parameters.userId);
         }
     });
+}
+
+//post message to user to show the completion of their registration.
+function postWelcomeMessage(url, token, gameChannel, userId) {
+    try {
+        //post message to user to indicate they are in the game
+        let message = 'Welcome to the Random Fact game. :grinning: \n Your Random Fact is: "' + parameters.variables[1] + '"';
+        utilities.postEphemeralMessageToSlack(url, token, gameChannel, userId, message, () => { }, {});
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 module.exports = { registerPlayer };
