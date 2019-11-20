@@ -40,7 +40,7 @@ function postWelcomeMessage(error, response, body, parameters) {
         parameters.variables[3] = display_name;
         let user_id = parameters.userId;
         //post message to user to indicate they are in the game
-        let message = 'Welcome to the Cool Facts game. You have been registered! :grinning:';
+        let message = 'Welcome to the Random Fact game. :grinning: \n Your Random Fact is: "' + parameters.variables[1] + '"';
         utilities.postEphemeralMessageToSlack(parameters.url, parameters.token, parameters.gameChannel, user_id, message, insertPlayerIntoDB, {
             variables: parameters.variables,
             docClient: parameters.docClient,
@@ -51,7 +51,7 @@ function postWelcomeMessage(error, response, body, parameters) {
     }
 }
 
-//insert players into dynamodb  
+//insert players into dynamodb
 function insertPlayerIntoDB(error, response, body, parameters) {
     if (parameters.variables[4] == '') {
         parameters.variables[4] = 'None';
