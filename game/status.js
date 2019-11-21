@@ -17,7 +17,6 @@ async function showLeaderboard(tableName, docClient, url, token, leaderboardLeng
         iteration++;
         counter = setTimeout(showLeaderboard, duration / numberOfIntervals, tableName, docClient, url, token, leaderboardLength, gameChannel, duration, numberOfIntervals, iteration);
     } else if (time_left > 0) {
-        let hours = (time_left <= 3600000) ? 0 : Math.floor(time_left / 3600000);
         let minutes = (time_left <= 60000) ? time_left / 60000 : Math.floor(time_left / 60000);
         message = "There are " + minutes + " minutes left in the game. Here's the leaderboard so far: \n";
         for (let i = 0; i < leaderboardLength; i++) { message += (i + 1) + ') ' + results[i].user_id + ' = *' + results[i].score + '*\n'; }
