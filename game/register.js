@@ -54,16 +54,16 @@ function insertPlayerIntoDB(error, response, body, parameters) {
             utilities.postEphemeralMessageToSlack(parameters.url, parameters.token, parameters.gameChannel, parameters.userId, message, () => { }, {});
         } else {
             console.log("Added item:", JSON.stringify(data, null, 2));
-            postWelcomeMessage(parameters.url, parameters.token, parameters.gameChannel, parameters.userId);
+            postWelcomeMessage(parameters.url, parameters.token, parameters.gameChannel, parameters.userId, parameters.variables[1]);
         }
     });
 }
 
 //post message to user to show the completion of their registration.
-function postWelcomeMessage(url, token, gameChannel, userId) {
+function postWelcomeMessage(url, token, gameChannel, userId, fact) {
     try {
         //post message to user to indicate they are in the game
-        let message = 'Welcome to the Random Fact game. :grinning: \n Your Random Fact is: "' + parameters.variables[1] + '"';
+        let message = 'Welcome to the Random Fact game. :grinning: \n Your Random Fact is: "' + fact + '"';
         utilities.postEphemeralMessageToSlack(url, token, gameChannel, userId, message, () => { }, {});
     } catch (err) {
         console.log(err);
